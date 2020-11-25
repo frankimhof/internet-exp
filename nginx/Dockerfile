@@ -10,6 +10,7 @@ ARG LIBOQS_BUILD_DEFINES="-DOQS_USE_CPU_EXTENSIONS=OFF"
 # installation paths
 ARG OPENSSL_PATH=/opt/openssl
 ARG NGINX_PATH=/opt/nginx
+ARG CA_PATH=/opt/internet-exp-ca
 
 # defines the QSC signature algorithm used for the certificates:
 #ARG SIG_ALG="dilithium2"
@@ -37,12 +38,13 @@ RUN apk add build-base linux-headers \
             libtool automake autoconf cmake ninja \
             make \
             openssl openssl-dev \
-            git wget pcre-dev \
+            git wget pcre-dev
 
 # get OQS sources
 WORKDIR /opt
 RUN git clone --depth 1 --branch main https://github.com/open-quantum-safe/liboqs && \
     git clone --depth 1 --branch OQS-OpenSSL_1_1_1-stable https://github.com/open-quantum-safe/openssl && \
+    git clone --depth 1 https://github.com/frankimhof/internet-exp-ca.git && \
     wget nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && tar -zxvf nginx-${NGINX_VERSION}.tar.gz;
 
 # build liboqs (static only)
@@ -66,28 +68,28 @@ FROM alpine
 ARG LIBOQS_BUILD_DEFINES
 ARG OPENSSL_PATH
 ARG NGINX_PATH
+ARG CA_PATH
 ARG SERVER_COMMON_NAME
 
 ## second stage: Only create minimal image without build tooling and intermediate build results generated above:
 
-RUN apk add pcre-dev python3
+RUN apk add pcre-dev python3 bash
 
 # Only retain the ${*_PATH} contents in the final image
 COPY --from=intermediate ${NGINX_PATH} ${NGINX_PATH}
-COPY --from=intermediate ${OPENSSL_PATH}/apps/openssl ${OPENSSL_PATH}
+COPY --from=intermediate ${OPENSSL_PATH}/apps/openssl ${OPENSSL_PATH}/apps/openssl
+COPY --from=intermediate ${OPENSSL_PATH}/apps/openssl.cnf ${OPENSSL_PATH}/apps/openssl.cnf
+COPY --from=intermediate ${CA_PATH} ${CA_PATH}
 COPY nginx-conf/ ${NGINX_PATH}/nginx-conf
 COPY html/ ${NGINX_PATH}/html
 
-WORKDIR ${NGINX_PATH}
-
-# fetch CA files from git and create Server Certificates and Keys
-RUN git clone --depth 1 https://github.com/frankimhof/internet-exp-ca.git && \
-    cd internet-exp-ca && \
-    ./createAllServerCerts.sh ${OPENSSL_PATH} ${SERVER_COMMON_NAME}
+# create Server Certificates and Keys
+WORKDIR ${CA_PATH}
+RUN /bin/bash ./createAllServerCerts.sh ${OPENSSL_PATH} ${SERVER_COMMON_NAME}
 # move server crt and key files into pki folder
 WORKDIR ${NGINX_PATH}
 RUN mkdir pki && \
-    mv internet-exp-ca/*srv.* ${NGINX_PATH}pki
+    mv ${CA_PATH}/*srv.* ${NGINX_PATH}/pki
 # create HTML Files
 WORKDIR ${NGINX_PATH}/html
 RUN python3 createHTMLFiles.py
