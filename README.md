@@ -33,7 +33,7 @@ Replace **\<SERVER_COMMON_NAME\>** with the server name that has been choosen ea
 This will add the nginx server to /etc/hosts and help resolve host verification later on when using curl.
 ### run curl command
 ```
-curl "http://<SERVER_COMMON_NAME>:<PORT>/<FILE>" --curves <KEM> --cacert certs/<SIG>_CA.crt --verbose --output - -H "Connection: close"
+curl "https://<SERVER_COMMON_NAME>:<PORT>/<FILE>" --curves <KEM> --cacert certs/<SIG>_CA.crt --verbose --output - -H "Connection: close"
 ```
 This runs a simple curl command to test whether the connection works.  
 Replace **\<PORT\>** and **\<SIG\>** with the desired SIG and the corresponding port.(4433 ecdsap256 for example)  
