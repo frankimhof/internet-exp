@@ -5,6 +5,7 @@ ARG CURL_VERSION=7.69.1
 
 # Default location where all binaries wind up:
 ARG INSTALLDIR=/opt/oqssa
+ARG CA_PATH=/opt/internet-exp-ca
 
 # liboqs build defines (https://github.com/open-quantum-safe/liboqs/wiki/Customizing-liboqs)
 ARG LIBOQS_BUILD_DEFINES="-DOQS_ENABLE_KEM_BIKE=OFF -DOQS_ENABLE_KEM_FRODOKEM=OFF -DOQS_ENABLE_KEM_SIKE=OFF -DOQS_ENABLE_KEM_SIDH=OFF -DOQS_ENABLE_SIG_PICNIC=OFF -DOQS_ENABLE_KEM_CLASSIC_MCELIECE=ON -DOQS_ENABLE_KEM_HQC=OFF -DOQS_ENABLE_KEM_KYBER=ON -DOQS_ENABLE_KEM_NTRU=ON -DOQS_ENABLE_KEM_SABER=ON -DOQS_ENABLE_SIG_DILITHIUM=ON -DOQS_ENABLE_SIG_FALCON=ON -DOQS_ENABLE_SIG_RAINBOW=ON -DOQS_ENABLE_SIG_SPHINCS=OFF"
@@ -27,7 +28,7 @@ ARG LIBOQS_BUILD_DEFINES
 ARG OPENSSL_BUILD_DEFINES
 ARG SIG_ALG
 ARG MAKE_DEFINES
-
+ARG CA_PATH
 LABEL version="2"
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -45,6 +46,7 @@ RUN apk add build-base linux-headers \
 WORKDIR /opt
 RUN git clone --depth 1 --branch main https://github.com/open-quantum-safe/liboqs && \
     git clone --depth 1 --branch OQS-OpenSSL_1_1_1-stable https://github.com/open-quantum-safe/openssl ossl-src && \
+    git clone --depth 1 https://github.com/frankimhof/internet-exp-ca.git && \
     wget https://curl.haxx.se/download/curl-${CURL_VERSION}.tar.gz && tar -zxvf curl-${CURL_VERSION}.tar.gz;
 
 # Add curl patchfile
@@ -53,8 +55,8 @@ ADD patch-${CURL_VERSION}.oqs.txt /opt/patch-${CURL_VERSION}.oqs.txt
 # build liboqs shared and static
 WORKDIR /opt/liboqs
 # build from specific commit to get around error. This will be fixed by https://github.com/open-quantum-safe/openssl/pull/259
-RUN git fetch origin --depth 1 0c17d3dfe7aff6a9a35683cfafaae29219e33313 && \
-    git checkout FETCH_HEAD
+#RUN git fetch origin --depth 1 0c17d3dfe7aff6a9a35683cfafaae29219e33313 && \
+#    git checkout FETCH_HEAD
 RUN mkdir build && cd build && cmake -G"Ninja" .. ${LIBOQS_BUILD_DEFINES} -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/ossl-src/oqs && ninja install
 RUN mkdir build-static && cd build-static && cmake -G"Ninja" .. -DCMAKE_BUILD_TYPE=${LIBOQS_BUILD_TYPE} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/opt/ossl-src/oqs && ninja install
 
@@ -113,10 +115,11 @@ FROM alpine:3.11 as dev
 # Take in all global args
 ARG INSTALLDIR
 ARG SIG_ALG
+ARG CA_PATH
 
 # Only retain the ${INSTALLDIR} contents in the final image
 COPY --from=intermediate ${INSTALLDIR} ${INSTALLDIR}
-
+COPY --from=intermediate ${CA_PATH} /certs
 # set path to use 'new' openssl & curl. Dyn libs have been properly linked in to match
 ENV PATH="${INSTALLDIR}/bin:${PATH}"
 
@@ -135,14 +138,12 @@ RUN set -x && mkdir /opt/test; \
 COPY serverstart.sh ${INSTALLDIR}/bin
 COPY perftest.sh ${INSTALLDIR}/bin
 
+
 WORKDIR ${INSTALLDIR}
 
 FROM dev
 ARG INSTALLDIR
-
 WORKDIR /
-RUN git clone --depth 1 https://github.com/frankimhof/internet-exp-ca.git
-COPY ./internet-exp-ca /certs
 
 # Enable a normal user to create new server keys off set CA
 RUN addgroup -g 1000 -S oqs && adduser --uid 1000 -S oqs -G oqs && chown -R oqs.oqs /opt/test && chmod go+r ${INSTALLDIR}/bin/CA.key && chmod go+w ${INSTALLDIR}/bin/CA.srl
