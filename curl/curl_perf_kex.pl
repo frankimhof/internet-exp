@@ -11,6 +11,7 @@ if ($#ARGV + 1 != 2) {
 
 my $server = $ARGV[0];
 my $timelimit = $ARGV[1];
+my $testresult_path = '/opt/test/testresults';
 
 #my @kex_algs = ('prime256v1', 'kyber512', 'kyber1024', 'p256_kyber512', 'p256_kyber1024', 'kyber512_90s', 'ntru_hps2048509', 'lightsaber', 'p256_kyber512_90s', 'p256_lightsaber');
 my @kex_algs = ('prime256v1');
@@ -19,7 +20,7 @@ my @files = ('index1kb.html', 'index10kb.html', 'index100kb.html', 'index1000kb.
 
 foreach my $kex_alg (@kex_algs) {
     my $sig_alg = 'ecdsap256';
-    my $output = 'curl-kex-' . $kex_alg . '-' . $sig_alg;
+    my $output = $testresult_path . 'curl-kex-' . $kex_alg . '-' . $sig_alg;
     foreach my $file (@files) {
         my $port = '4433';
         system("printf '$file' >> $output.txt");
