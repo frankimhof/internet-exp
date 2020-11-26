@@ -3,7 +3,6 @@ This repo contains code used to run an experiment similar to the one described i
 Most of the code is taken from [open-quantum-safe/oqs-demos](https://github.com/open-quantum-safe/oqs-demos).
 ## Perequisites
 Be sure to have [docker](https://docs.docker.com/install) installed.  
-Be sure to have python3 installed.
 
 ## nginx (server)
 ### build nginx docker image
@@ -16,7 +15,7 @@ docker build -t oqs-nginx-img .
 ```
 docker run --detach --rm --name oqs-nginx -p 4433-4442:4433-4442 oqs-nginx-img
 ```
-This will expose all ports 4433-4442. See [here](https://github.com/frankimhof/internet-exp/blob/main/nginx/certs/README.md) for information about which port offers which SIG.  
+This will expose all ports 4433-4442. See [here](https://github.com/frankimhof/internet-exp/tree/master/nginx) for information about which port offers which SIG.  
 <br>
 <br>
 ## curl (client, running on a different computer)
@@ -35,7 +34,7 @@ The following command will start the container interactively.
 ```
 docker run -it --add-host="<SERVER_COMMON_NAME>:<SERVER_IP>" -v <LOCAL_DIRECTORY>/testresults:/opt/test/testresults oqs-curl
 ```
-Replace **\<SERVER_COMMON_NAME\>** with the server name that has been choosen earlier and replace **\<SERVER_IP\>** with the ip address of the nginx server. (This will add the nginx server to /etc/hosts and help resolve host verification later on when using curl.)  
+Replace **\<SERVER_COMMON_NAME\>** with the server name that has been choosen earlier and replace **\<SERVER_IP\>** with the ip address of the nginx server.  
 Replace **\<LOCAL_DIRECTORY\>** with the local directory that has been chosen earlier.
 
 ### test connection with server before running experiment
@@ -52,7 +51,7 @@ perl /opt/test/curl_perf_kex.pl <SERVER_COMMON_NAME> <DURATION_IN_SECONDS>
 Replace **\<DURATION_IN_SECONDS\>** with an integer. If set to 180, the experiment will collect data for 3 minutes (180s) **for every KEM and every HTML file**.
 
 ### (alternatively) run specific curl command
-Test curl with specific \<KEM\> and \<SIG\>. See [here](https://github.com/frankimhof/internet-exp/blob/main/nginx/certs/README.md) for mapping between \<SIG\> and \<PORT\>.
+Test curl with specific \<KEM\> and \<SIG\>. See [here](https://github.com/frankimhof/internet-exp/tree/master/nginx) for mapping between \<SIG\> and \<PORT\>.
 ```
 curl "https://<SERVER_COMMON_NAME>:<PORT>/<FILE>" --curves <KEM> --cacert certs/<SIG>_CA.crt --verbose --output - -H "Connection: close"
 ```
