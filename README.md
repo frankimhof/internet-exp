@@ -25,17 +25,37 @@ This will expose all ports 4433-4442. See [here](https://github.com/frankimhof/i
 cd ../curl
 docker build -t oqs-curl .
 ```
+### create a local directory for the testresults
+```
+mkdir <LOCAL_DIRECTORY>/testresults
+```
+Replace **\<LOCAL_DIRECTORY\>** with a local directory of your choosing. The testresults will be written to the **testresults** folder inside this directory.
 ### run docker container
+The following command will start the container interactively.
 ```
-docker run -it --add-host="<SERVER_COMMON_NAME>:<SERVER_IP>" oqs-curl
+docker run -it --add-host="<SERVER_COMMON_NAME>:<SERVER_IP>" -v <LOCAL_DIRECTORY>/testresults:/opt/test/testresults oqs-curl
 ```
-Replace **\<SERVER_COMMON_NAME\>** with the server name that has been choosen earlier and replace **\<SERVER_IP\>** with the ip address of the nginx server.  
-This will add the nginx server to /etc/hosts and help resolve host verification later on when using curl.
-### run curl command
+Replace **\<SERVER_COMMON_NAME\>** with the server name that has been choosen earlier and replace **\<SERVER_IP\>** with the ip address of the nginx server. (This will add the nginx server to /etc/hosts and help resolve host verification later on when using curl.)  
+Replace **\<LOCAL_DIRECTORY\>** with the local directory that has been chosen earlier.
+
+### test connection with server before running experiment
+(Inside the container's shell)
+```
+ping <SERVER_COMMON_NAME>
+```
+
+### run experiment
+(Inside the container's shell)
+```
+perl /opt/test/curl_perf_kex.pl <SERVER_COMMON_NAME> <DURATION_IN_SECONDS>
+```
+Replace **\<DURATION_IN_SECONDS\>** with an integer. If set to 180, the experiment will collect data for 3 minutes (180s) **for every KEM and every HTML file**.
+
+### (alternatively) run specific curl command
+Test curl with specific \<KEM\> and \<SIG\>. See [here](https://github.com/frankimhof/internet-exp/blob/main/nginx/certs/README.md) for mapping between \<SIG\> and \<PORT\>.
 ```
 curl "https://<SERVER_COMMON_NAME>:<PORT>/<FILE>" --curves <KEM> --cacert certs/<SIG>_CA.crt --verbose --output - -H "Connection: close"
 ```
-This runs a simple curl command to test whether the connection works.  
 Replace **\<PORT\>** and **\<SIG\>** with the desired SIG and the corresponding port.(4433 ecdsap256 for example)  
 Replace **\<FILE\>** with one of the following **index1kb.html, index10kb.html, index100kb.html, index1000kb.html**  
 Replace **\<KEM\>** with one of the available KEMS. (kyber512, kyber1024, saber, firesaber etc.)
