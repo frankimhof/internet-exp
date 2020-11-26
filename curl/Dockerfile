@@ -145,11 +145,12 @@ FROM dev
 ARG INSTALLDIR
 WORKDIR /
 RUN mkdir /opt/test/testresults
+RUN apk add perl
 # Enable a normal user to create new server keys off set CA
 RUN addgroup -g 1000 -S oqs && adduser --uid 1000 -S oqs -G oqs && chown -R oqs.oqs /opt/test && chmod go+r ${INSTALLDIR}/bin/CA.key && chmod go+w ${INSTALLDIR}/bin/CA.srl
 
 USER oqs
-ENTRYPOINT ["perl", "/opt/test/"]
 #Run the kex experiment for 1 second
-CMD ["curl_perf_kex.pl", "testserver", "1"]
+ENTRYPOINT ["/bin/sh"]
+#CMD ["ping testserver"]
 STOPSIGNAL SIGTERM
