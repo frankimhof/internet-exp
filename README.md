@@ -32,7 +32,7 @@ Replace **\<LOCAL_DIRECTORY\>** with a local directory of your choosing. The tes
 ### run docker container
 The following command will start the container interactively.
 ```
-docker run -it --add-host="<SERVER_COMMON_NAME>:<SERVER_IP>" -v <LOCAL_DIRECTORY>/testresults:/opt/test/testresults oqs-curl
+docker run -u root -it --add-host="<SERVER_COMMON_NAME>:<SERVER_IP>" -v <LOCAL_DIRECTORY>/testresults:/opt/test/testresults oqs-curl
 ```
 Replace **\<SERVER_COMMON_NAME\>** with the server name that has been choosen earlier and replace **\<SERVER_IP\>** with the ip address of the nginx server.  
 Replace **\<LOCAL_DIRECTORY\>** with the local directory that has been chosen earlier.
@@ -47,8 +47,10 @@ ping <SERVER_COMMON_NAME>
 (Inside the container's shell)
 ```
 perl /opt/test/curl_perf_kex.pl <SERVER_COMMON_NAME> <DURATION_IN_SECONDS>
+OR
+perl /opt/test/curl_perf_sig.pl <SERVER_COMMON_NAME> <DURATION_IN_SECONDS>
 ```
-Replace **\<DURATION_IN_SECONDS\>** with an integer. If set to 180, the experiment will collect data for 3 minutes (180s) **for every KEM and every HTML file**.
+Replace **\<DURATION_IN_SECONDS\>** with an integer. If set to 180, the experiment will collect data for 3 minutes (180s) **for every KEM|SIG and every HTML file**.
 
 ### (alternatively) run specific curl command
 Test curl with specific \<KEM\> and \<SIG\>. See [here](https://github.com/frankimhof/internet-exp/tree/master/nginx) for mapping between \<SIG\> and \<PORT\>.
