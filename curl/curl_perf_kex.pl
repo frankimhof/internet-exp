@@ -32,24 +32,24 @@ my @files = ('index1kb.html', 'index10kb.html', 'index100kb.html', 'index1000kb.
 
 foreach my $kex_alg (@kex_algs) {
     my $sig_alg = 'ecdsap256';
+    my $port = '4433';
     # Name the files starting with RTT and Packet Loss info
     my $output = $testresult_path . $rtt . 'ms__' . $packet_loss . '__KEX_' . $kex_alg . '__SIG_' . $sig_alg;
-        foreach my $file (@files) {
-            my $port = '4433';
-            system("printf '$file' >> $output.csv");
-            my $check_curl_command = "curl -s 'https://$server:4433/$file' --curves $kex_alg --cacert /certs/ecdsap256_CA.crt -H 'Connection: close'";
-            system($check_curl_command . "2> /dev/null");
-            if($? != 0){
-                    printf("Curl exited with code: %d", $?>>8);
-                    last;
-            }
-            my $cmd = "curl -s 'https://$server:4433/$file' --curves $kex_alg --cacert /certs/ecdsap256_CA.crt -H 'Connection: close' -w '\,%{time_total}' 2> /dev/null | tail -n1";
-            system("echo $cmd");
-            my $endtime = Time::HiRes::time()+$timelimit;
-            while(Time::HiRes::time()<$endtime){
-                system($cmd . ">> $output.csv");
-            }
-            system("printf '\n' >> $output.csv");
+    foreach my $file (@files) {
+        system("printf '$file' >> $output.csv");
+        my $check_curl_command = "curl -s 'https://$server:4433/$file' --curves $kex_alg --cacert /certs/ecdsap256_CA.crt -H 'Connection: close'";
+        system($check_curl_command . "2> /dev/null");
+        if($? != 0){
+                printf("Curl exited with code: %d", $?>>8);
+                last;
         }
+        my $cmd = "curl -s 'https://$server:4433/$file' --curves $kex_alg --cacert /certs/ecdsap256_CA.crt -H 'Connection: close' -w '\,%{time_total}' 2> /dev/null | tail -n1";
+        system("echo 'running curl for $timelimit second(s) on $server:$port/$file using kex $kex_alg'");
+        my $endtime = Time::HiRes::time()+$timelimit;
+        while(Time::HiRes::time()<$endtime){
+            system($cmd . ">> $output.csv");
+        }
+        system("printf '\n' >> $output.csv");
+    }
 }
 
