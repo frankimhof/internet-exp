@@ -138,6 +138,7 @@ RUN set -x && mkdir /opt/test; \
 COPY serverstart.sh ${INSTALLDIR}/bin
 COPY perftest.sh ${INSTALLDIR}/bin
 COPY curl_perf_kex.pl /opt/test
+COPY curl_perf_sig.pl /opt/test
 
 WORKDIR ${INSTALLDIR}
 
@@ -146,6 +147,7 @@ ARG INSTALLDIR
 WORKDIR /
 RUN mkdir /opt/test/testresults
 RUN apk add perl
+WORKDIR /opt/test
 # must be root because we need permission for "ping" command
 USER root
 ENTRYPOINT ["/bin/sh"]
