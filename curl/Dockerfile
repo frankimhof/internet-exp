@@ -149,6 +149,5 @@ RUN apk add perl
 # must be root because we need permission for "ping" command
 USER root
 ENTRYPOINT ["/bin/sh"]
-CMD ["cd /opt/test"]
 
 STOPSIGNAL SIGTERM
