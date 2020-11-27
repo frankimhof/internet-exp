@@ -43,11 +43,13 @@ Replace **\<LOCAL_DIRECTORY\>** with the local directory that has been chosen ea
 ping <SERVER_COMMON_NAME>
 ```
 
-### run experiment
+### run experiment(s)
 (Inside the container's shell)
 ```
 perl /opt/test/curl_perf_kex.pl <SERVER_COMMON_NAME> <DURATION_IN_SECONDS>
-OR
+```
+and or
+```
 perl /opt/test/curl_perf_sig.pl <SERVER_COMMON_NAME> <DURATION_IN_SECONDS>
 ```
 Replace **\<DURATION_IN_SECONDS\>** with an integer. If set to 180, the experiment will collect data for 3 minutes (180s) **for every KEM|SIG and every HTML file**.
