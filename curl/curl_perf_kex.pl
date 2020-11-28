@@ -32,7 +32,7 @@ system("echo =================================================================")
 system("echo Running test curl_perf_kex");
 system("echo -----------------------------------------------------------------");
 sleep 2;
-my @kex_algs = ('prime256v1', 'kyber512');#, 'kyber1024', 'p256_kyber512', 'saber', 'lightsaber', 'firesaber', 'ntru_hps2048509', 'ntru_hps2048677', 'ntru_hps4096821');
+my @kex_algs = ('prime256v1', 'kyber512', 'kyber1024', 'p256_kyber512', 'saber', 'lightsaber', 'firesaber', 'ntru_hps2048509', 'ntru_hps2048677', 'ntru_hps4096821');
 #my @kex_algs = ('prime256v1', 'p256_kyber90s512', 'p256_sikep434', 'p256_frodo640aes');
 my @files = ('index1kb.html', 'index10kb.html', 'index100kb.html', 'index1000kb.html');
 
