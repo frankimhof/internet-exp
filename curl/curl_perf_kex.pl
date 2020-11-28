@@ -18,9 +18,9 @@ system("echo =================================================================")
 system("echo Testing connection with server: $server");
 system("echo -----------------------------------------------------------------");
 system("printf RTT_ > out.txt");
-system("ping '$server' -c 1 | tail -1 | awk '{print \$4}' | cut -d '/' -f 2 >> out.txt");
+system("ping '$server' -c 10 | tail -1 | awk '{print \$4}' | cut -d '/' -f 2 >> out.txt");
 system("printf PKTLOSS_ >> out.txt");
-system("ping '$server' -c 1 | tail -2 | head -n1 | awk '{print \$7}' >> out.txt");
+system("ping '$server' -c 10 | tail -2 | head -n1 | awk '{print \$7}' >> out.txt");
 
 my $rtt=`cat out.txt | head -n1 | tr -d '\n'`;
 my $packet_loss=`cat out.txt | tail -1 | tr -d '\n'`;
