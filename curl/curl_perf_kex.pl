@@ -18,15 +18,15 @@ system("echo =================================================================")
 system("echo Testing connection with server: $server");
 system("echo -----------------------------------------------------------------");
 system("printf RTT_ > out.txt");
-system("ping '$server' -c 10 | tail -1 | awk '{print \$4}' | cut -d '/' -f 2 >> out.txt");
+system("ping '$server' -c 1 | tail -1 | awk '{print \$4}' | cut -d '/' -f 2 >> out.txt");
 system("printf PKTLOSS_ >> out.txt");
-system("ping '$server' -c 10 | tail -2 | head -n1 | awk '{print \$7}' >> out.txt");
+system("ping '$server' -c 1 | tail -2 | head -n1 | awk '{print \$7}' >> out.txt");
 
 my $rtt=`cat out.txt | head -n1 | tr -d '\n'`;
 my $packet_loss=`cat out.txt | tail -1 | tr -d '\n'`;
 system("echo RTT '\(average\)'     = $rtt ms");
 system("echo Packet Loss           = '$packet_loss'");
-system("echo ");
+system("echo "); 
 sleep 3;
 system("echo =================================================================");
 system("echo Running test curl_perf_kex");
@@ -43,26 +43,27 @@ foreach my $kex_alg (@kex_algs) {
     my $output = $testresult_path . $rtt . 'ms__' . $packet_loss . '__KEX_' . $kex_alg . '__SIG_' . $sig_alg;
     foreach my $file (@files) {
         system("printf '$file' >> $output.csv");
-        my $check_curl_command = "curl -s 'https://$server:4433/$file' --curves $kex_alg --cacert /certs/ecdsap256_CA.crt -H 'Connection: close'";
-        system($check_curl_command . "2> /dev/null");
-        if($? != 0){
+        #Checking HTTP Status code for connection under test. If not 200, throw error
+        my $http_status_code=`curl -s -o /dev/null -w "%{http_code}" 'https://$server:$port/$file' --curves $kex_alg --cacert /certs/ecdsap256_CA.crt -H 'Connection: close'`;
+        if($http_status_code!=200){
                 system("echo =================================================================");
                 system("echo =================================================================");
-                printf("ERROR: Curl exited with code: %d", $?>>8);
+                printf("ERROR: curl returned HTTP Status Code: %d \n", $http_status_code);
                 last;
         }
-        my $cmd = "curl -s 'https://$server:4433/$file' --curves $kex_alg --cacert /certs/ecdsap256_CA.crt -H 'Connection: close' -w '\,%{time_total}' 2> /dev/null | tail -n1";
+        #Passed test, now executing test
         system("echo 'running curl for $timelimit second(s) on $server:$port/$file using kex $kex_alg'");
         my $endtime = Time::HiRes::time()+$timelimit;
         while(Time::HiRes::time()<$endtime){
-            system($cmd . ">> $output.csv");
+          #Write curl results to .csv file
+          system("curl -s -o /dev/null -w '\,%{time_total}' 'https://$server:4433/$file' --curves $kex_alg --cacert /certs/ecdsap256_CA.crt -H 'Connection: close' >> $output.csv");
         }
         system("printf '\n' >> $output.csv");
     }
     system("echo -----------------------------------------------------------------");
 }
 
-system("echo ");
+system("echo "); 
 system("echo =================================================================");
 system("echo =================================================================");
 system("echo DONE. Testresults have been written to /opt/test/testresults");
