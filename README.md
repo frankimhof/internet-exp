@@ -57,7 +57,7 @@ Replace **\<DURATION_IN_SECONDS\>** with an integer. If set to 180, the experime
 ### (alternatively) run specific curl command
 Test curl with specific \<KEM\> and \<SIG\>. See [here](https://github.com/frankimhof/internet-exp/tree/master/nginx) for mapping between \<SIG\> and \<PORT\>.
 ```
-curl "https://<SERVER_COMMON_NAME>:<PORT>/<FILE>" --curves <KEM> --cacert certs/<SIG>_CA.crt --verbose --output - -H "Connection: close"
+curl "https://<SERVER_COMMON_NAME>:<PORT>/<FILE>" --curves <KEM> --cacert /certs/<SIG>_CA.crt --verbose --output - -H "Connection: close"
 ```
 Replace **\<PORT\>** and **\<SIG\>** with the desired SIG and the corresponding port.(4433 ecdsap256 for example)  
 Replace **\<FILE\>** with one of the following **index1kb.html, index10kb.html, index100kb.html, index1000kb.html**  
